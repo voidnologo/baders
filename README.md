@@ -1,3 +1,8 @@
-Intro to pygame
+Bunnies Vs Badgers
 
-http://www.raywenderlich.com/24252/beginning-game-programming-for-teens-with-python
+Defend your castle from the attacking badgers!
+
+WASD to move
+Left-click mouse to shoot
+
+Try to improve your shooting accuracy!
