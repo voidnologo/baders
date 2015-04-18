@@ -4,8 +4,27 @@ import random
 from pygame.locals import *
 
 
+class Plot(object):
+    X = 1
+    Y = 2
+
+
+class Key(object):
+    W = 0
+    A = 1
+    S = 2
+    D = 3
+
+
+def radians(pos):
+    return 360 - pos * 57.29
+
 #  2
 pygame.init()
+screen_right = 640
+screen_bottom = -64
+screen_top = 480
+screen_left = -64
 width = 640
 height = 480
 screen = pygame.display.set_mode((width, height))
@@ -15,9 +34,11 @@ acc = [0, 0]
 arrows = []
 badtimer = 100
 badtimer1 = 0
-badguys = [[640, 100]]
+badguys = [[screen_top, 100]]
 healthvalue = 194
 pygame.mixer.init()
+seconds = 90
+game_time = seconds * 1000
 
 #  3
 player = pygame.image.load('resources/images/dude.png')
@@ -62,7 +83,7 @@ while running:
     #   6.1 player angle and position
     position = pygame.mouse.get_pos()
     angle = math.atan2(position[1] - (playerpos[1] + 32), position[0] - (playerpos[0] + 26))
-    playerrot = pygame.transform.rotate(player, 360 - angle * 57.29)
+    playerrot = pygame.transform.rotate(player, radians(angle))
     playerpos1 = (playerpos[0] - playerrot.get_rect().width / 2, playerpos[1] - playerrot.get_rect().height / 2)
     screen.blit(playerrot, playerpos1)
 
@@ -73,17 +94,17 @@ while running:
         vely = math.sin(bullet[0]) * 10
         bullet[1] += velx
         bullet[2] += vely
-        if bullet[1] < -64 or bullet[1] > 640 or bullet[2] < -64 or bullet[2] > 480:
+        if bullet[Plot.X] < sceen_left or bullet[Plot.X] > screen_right or bullet[Plot.Y] < screen_bottom or bullet[Plot.Y] > screen_top:
             arrows.pop(index)
 
         index += 1
         for projectile in arrows:
-            arrow1 = pygame.transform.rotate(arrow, 360 - projectile[0] * 57.29)
+            arrow1 = pygame.transform.rotate(arrow, radians(projectile[0]))
             screen.blit(arrow1, (projectile[1], projectile[2]))
 
     #  6.3 draw badgers
     if badtimer == 0:
-        badguys.append([640, random.randint(50, 430)])
+        badguys.append([screen_top, random.randint(50, 430)])
         badtimer = 100 - (badtimer1 * 2)
         if badtimer1 > 35:
             badtimer1 = 35
@@ -91,7 +112,7 @@ while running:
             badtimer1 += 5
     index = 0
     for badguy in badguys:
-        if badguy[0] < -64:
+        if badguy[0] < screen_left:
             badguys.pop(index)
         badguy[0] -= 7
 
@@ -126,8 +147,8 @@ while running:
     font = pygame.font.Font(None, 24)
     survivedtext = font.render(
         '{}:{}'.format(
-            str((90000 - pygame.time.get_ticks()) / 60000),
-            str((90000 - pygame.time.get_ticks()) / 1000 % 60).zfill(2),
+            str((game_time - pygame.time.get_ticks()) / 60000),
+            str((game_time - pygame.time.get_ticks()) / 1000 % 60).zfill(2),
         ), True, (0, 0, 0))
     textRect = survivedtext.get_rect()
     textRect.topright = [635, 5]
