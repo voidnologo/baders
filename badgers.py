@@ -19,6 +19,15 @@ class Key(object):
 def radians(pos):
     return 360 - pos * 57.29
 
+
+def calculate_accuracy():
+    if accuracy['shots'] != 0:
+        return accuracy['hits'] * 1.0 / accuracy['shots'] * 100
+    else:
+        return 0
+
+
+
 #  2
 pygame.init()
 screen_right = 640
@@ -30,7 +39,7 @@ height = 480
 screen = pygame.display.set_mode((width, height))
 keys = [False, False, False, False]
 playerpos = [100, 100]
-acc = [0, 0]
+accuracy = {'hits': 0, 'shots': 0}
 arrows = []
 badtimer = 100
 badtimer1 = 0
@@ -92,15 +101,15 @@ while running:
         index = 0
         velx = math.cos(bullet[0]) * 10
         vely = math.sin(bullet[0]) * 10
-        bullet[1] += velx
-        bullet[2] += vely
-        if bullet[Plot.X] < sceen_left or bullet[Plot.X] > screen_right or bullet[Plot.Y] < screen_bottom or bullet[Plot.Y] > screen_top:
+        bullet[Plot.X] += velx
+        bullet[Plot.Y] += vely
+        if bullet[Plot.X] < screen_left or bullet[Plot.X] > screen_right or bullet[Plot.Y] < screen_bottom or bullet[Plot.Y] > screen_top:
             arrows.pop(index)
 
         index += 1
         for projectile in arrows:
             arrow1 = pygame.transform.rotate(arrow, radians(projectile[0]))
-            screen.blit(arrow1, (projectile[1], projectile[2]))
+            screen.blit(arrow1, (projectile[Plot.X], projectile[Plot.Y]))
 
     #  6.3 draw badgers
     if badtimer == 0:
@@ -129,11 +138,11 @@ while running:
         index1 = 0
         for bullet in arrows:
             bullrect = pygame.Rect(arrow.get_rect())
-            bullrect.left = bullet[1]
-            bullrect.top = bullet[2]
+            bullrect.left = bullet[Plot.X]
+            bullrect.top = bullet[Plot.Y]
             if badrect.colliderect(bullrect):
                 enemy.play()
-                acc[0] += 1
+                accuracy['hits'] += 1
                 badguys.pop(index)
                 arrows.pop(index1)
             index1 += 1
@@ -170,28 +179,28 @@ while running:
 
         if event.type == pygame.KEYDOWN:
             if event.key == K_w:
-                keys[0] = True
+                keys[Key.W] = True
             elif event.key == K_a:
-                keys[1] = True
+                keys[Key.A] = True
             elif event.key == K_s:
-                keys[2] = True
+                keys[Key.S] = True
             elif event.key == K_d:
-                keys[3] = True
+                keys[Key.D] = True
 
         if event.type == pygame.KEYUP:
             if event.key == K_w:
-                keys[0] = False
+                keys[Key.W] = False
             elif event.key == K_a:
-                keys[1] = False
+                keys[Key.A] = False
             elif event.key == K_s:
-                keys[2] = False
+                keys[Key.S] = False
             elif event.key == K_d:
-                keys[3] = False
+                keys[Key.D] = False
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             shoot.play()
             position = pygame.mouse.get_pos()
-            acc[1] += 1
+            accuracy['shots'] += 1
 
             arrows.append([math.atan2(
                 position[1] - (playerpos1[1] + 32),
@@ -201,26 +210,23 @@ while running:
             ])
 
     #  9  movement keys
-    if keys[0]:
+    #  TODO bounds check.  Keep rabbit on screen.
+    if keys[Key.W]:
         playerpos[1] -= 5
-    elif keys[2]:
+    elif keys[Key.S]:
         playerpos[1] += 5
-    elif keys[1]:
+    elif keys[Key.A]:
         playerpos[0] -= 5
-    elif keys[3]:
+    elif keys[Key.D]:
         playerpos[0] += 5
 
     #  10 win/lose check
-    if pygame.time.get_ticks() >= 90000:
+    if pygame.time.get_ticks() >= game_time:
         running = False
         exitcode = 'win'
     if healthvalue <= 0:
         running = False
         exitcode = 'lose'
-    if acc[1] != 0:
-        accuracy = acc[0] * 1.0 / acc[1] * 100
-    else:
-        accuracy = 0
 
     #  11 win/lose display
     if exitcode:
@@ -232,7 +238,7 @@ while running:
             pos = (0, 255, 0)
         pygame.font.init()
         font = pygame.font.Font(None, 24)
-        text = font.render("Accuracy: {}%".format(accuracy), True, pos)
+        text = font.render("Accuracy: {}%".format(calculate_accuracy()), True, pos)
         textRect = text.get_rect()
         textRect.centerx = screen.get_rect().centerx
         textRect.centery = screen.get_rect().centery + 24
