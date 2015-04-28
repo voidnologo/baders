@@ -7,6 +7,8 @@ from pygame.locals import *
 class Plot(object):
     X = 1
     Y = 2
+    left = 0
+    top = 1
 
 
 class Key(object):
@@ -93,7 +95,7 @@ while running:
     position = pygame.mouse.get_pos()
     angle = math.atan2(position[1] - (playerpos[1] + 32), position[0] - (playerpos[0] + 26))
     playerrot = pygame.transform.rotate(player, radians(angle))
-    playerpos1 = (playerpos[0] - playerrot.get_rect().width / 2, playerpos[1] - playerrot.get_rect().height / 2)
+    playerpos1 = (playerpos[Plot.left] - playerrot.get_rect().width / 2, playerpos[Plot.top] - playerrot.get_rect().height / 2)
     screen.blit(playerrot, playerpos1)
 
     #  6.2 draw arrows
@@ -108,12 +110,12 @@ while running:
 
         index += 1
         for projectile in arrows:
-            arrow1 = pygame.transform.rotate(arrow, radians(projectile[0]))
+            arrow1 = pygame.transform.rotate(arrow, radians(projectile[Plot.left]))
             screen.blit(arrow1, (projectile[Plot.X], projectile[Plot.Y]))
 
     #  6.3 draw badgers
     if badtimer == 0:
-        badguys.append([screen_top, random.randint(50, 430)])
+        badguys.append([screen_right, random.randint(50, 430)])
         badtimer = 100 - (badtimer1 * 2)
         if badtimer1 > 35:
             badtimer1 = 35
@@ -121,14 +123,14 @@ while running:
             badtimer1 += 5
     index = 0
     for badguy in badguys:
-        if badguy[0] < screen_left:
+        if badguy[Plot.left] < screen_left:
             badguys.pop(index)
-        badguy[0] -= 7
+        badguy[Plot.left] -= 7
 
         #  6.3.1 attack castle
         badrect = pygame.Rect(badguyimg.get_rect())
-        badrect.top = badguy[1]
-        badrect.left = badguy[0]
+        badrect.top = badguy[Plot.top]
+        badrect.left = badguy[Plot.left]
         if badrect.left < 64:
             hit.play()
             healthvalue -= random.randint(5, 20)
@@ -203,22 +205,22 @@ while running:
             accuracy['shots'] += 1
 
             arrows.append([math.atan2(
-                position[1] - (playerpos1[1] + 32),
-                position[0] - (playerpos1[0] + 26)),
-                playerpos1[0] + 32,
-                playerpos1[1] + 32
+                position[Plot.top] - (playerpos1[Plot.top] + 32),
+                position[Plot.left] - (playerpos1[Plot.left] + 26)),
+                playerpos1[Plot.left] + 32,
+                playerpos1[Plot.top] + 32
             ])
 
     #  9  movement keys
     #  TODO bounds check.  Keep rabbit on screen.
     if keys[Key.W]:
-        playerpos[1] -= 5
+        playerpos[Plot.top] -= 5
     elif keys[Key.S]:
-        playerpos[1] += 5
+        playerpos[Plot.top] += 5
     elif keys[Key.A]:
-        playerpos[0] -= 5
+        playerpos[Plot.left] -= 5
     elif keys[Key.D]:
-        playerpos[0] += 5
+        playerpos[Plot.left] += 5
 
     #  10 win/lose check
     if pygame.time.get_ticks() >= game_time:
